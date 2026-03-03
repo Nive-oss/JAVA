@@ -1,0 +1,37 @@
+public class Solution {
+    public boolean isMatch(String s, String p) {
+        int rows = s.length();
+        int cols = p.length();
+        boolean[][] dp = new boolean[rows + 1][cols + 1];
+        dp[0][0] = true;
+        for (int j = 1; j <= cols; j++) {
+            if (p.charAt(j - 1) == '*') {
+                dp[0][j] = dp[0][j - 2];
+            }
+        }
+        for (int i = 1; i <= rows; i++) {
+            for (int j = 1; j <= cols; j++) {
+                char charS = s.charAt(i - 1);
+                char charP = p.charAt(j - 1);
+
+                if (charP == charS || charP == '.') {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else if (charP == '*') {
+                    dp[i][j] = dp[i][j - 2];
+                    char prevCharP = p.charAt(j - 2);
+                    if (prevCharP == charS || prevCharP == '.') {
+                        dp[i][j] = dp[i][j] || dp[i - 1][j];
+                    }
+                }
+            }
+        }
+
+        return dp[rows][cols];
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        // Test Case
+        System.out.println(sol.isMatch("aa", "a*")); // Output: true
+    }
+}
