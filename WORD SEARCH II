@@ -1,0 +1,72 @@
+import java.util.*;
+
+class TrieNode {
+    Map<Character, TrieNode> children = new HashMap<>();
+    String word = null; // Stores the full word at the leaf node
+}
+
+class Solution {
+    public List<String> findWords(char[][] board, String[] words) {
+        // 1. Build the Trie
+        TrieNode root = new TrieNode();
+        for (String w : words) {
+            TrieNode node = root;
+            for (char c : w.toCharArray()) {
+                node.children.putIfAbsent(c, new TrieNode());
+                node = node.children.get(c);
+            }
+            node.word = w;
+        }
+
+        List<String> result = new ArrayList<>();
+        int m = board.length;
+        int n = board[0].length;
+
+        // 2. Start Backtracking from every cell
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (root.children.containsKey(board[i][j])) {
+                    backtrack(board, i, j, root, result);
+                }
+            }
+        }
+        return result;
+    }
+
+    private void backtrack(char[][] board, int r, int c, TrieNode parent, List<String> result) {
+        char letter = board[r][c];
+        TrieNode currNode = parent.children.get(letter);
+
+        // Check if we found a word
+        if (currNode.word != null) {
+            result.add(currNode.word);
+            currNode.word = null; // Optimization: avoid duplicate entries
+        }
+
+        // Mark cell as visited
+        board[r][c] = '#';
+
+        // Explore neighbors (Up, Down, Left, Right)
+        int[] rowOffset = {-1, 1, 0, 0};
+        int[] colOffset = {0, 0, -1, 1};
+
+        for (int i = 0; i < 4; i++) {
+            int newR = r + rowOffset[i];
+            int newC = c + colOffset[i];
+
+            if (newR >= 0 && newR < board.length && newC >= 0 && newC < board[0].length) {
+                if (currNode.children.containsKey(board[newR][newC])) {
+                    backtrack(board, newR, newC, currNode, result);
+                }
+            }
+        }
+
+        // Backtrack: restore cell
+        board[r][c] = letter;
+
+        // Optimization: remove leaf nodes to prune the Trie
+        if (currNode.children.isEmpty()) {
+            parent.children.remove(letter);
+        }
+    }
+}
